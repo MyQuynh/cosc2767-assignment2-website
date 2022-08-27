@@ -1,0 +1,104 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: ${JENKINS_ADMIN_ID}
+         password: ${JENKINS_ADMIN_PASSWORD}
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+  remotingSecurity:
+    enabled: true
+security:
+  queueItemAuthenticator:
+    authenticators:
+    - global:
+        strategy: triggeringUsersAuthorizationStrategy
+unclassified:
+  location:
+    url: http://server_ip:8080/
+
+tool:
+  maven:
+    installations:
+      - home: "/opt/maven"
+        name: "maven3"
+  jdk:
+    installations:
+      - home: "/opt/java/openjdk"
+        name: "jdk11"
+
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - usernamePassword:
+          scope: GLOBAL
+          id: "tomcat_deployer"
+          username: "s3836322"
+          password: "s3836322"
+          description: "Tomcat deployer"
+      - usernamePassword:
+          scope: GLOBAL
+          id: "dockerhub_deployer"
+          username: "s3836322"
+          password: "dckr_pat_OVW-BESNVfTEbSv9KhJ23v1nz5E"
+          description: "Dockerhub deployer"
+jobs:
+  - script: >
+      pipelineJob('default-agent') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                agent any
+                tools {
+                  maven 'maven3'
+                  jdk 'jdk11'
+                }
+                triggers {
+                  pollSCM ''
+                }
+                stages {
+                  stage('checkout') {
+                    steps {
+                      git branch: 'master', url: 'https://github.com/devops4solutions/CI-CD-using-Docker.git'
+                    }
+                  }
+                  stage('Execute Maven') {
+                    steps {
+                      sh 'mvn package'
+                    }
+                  }
+                  stage('Docker Build and Tag') {
+                    steps {
+                      sh 'docker build -t samplewebapp:latest .'
+                      sh 'docker tag samplewebapp s3836322/samplewebapp:latest'
+                    }
+                  }
+                  stage('Publish image to Docker Hub') {
+                    steps {
+                      withDockerRegistry([ credentialsId: "dockerhub_deployer", url: "" ]) {
+                        sh  'docker push s3836322/samplewebapp:latest'
+                      }
+                    }
+                  }
+                  stage('Run Docker container on Jenkins Agent') {
+                    steps {
+                      sh "docker run -d -p 8003:8080 s3836322/samplewebapp"
+                    }
+                  }
+                  stage('Run Docker container on Tomcat hosts') {
+                    steps {
+                      sh "ssh -i ~/.ssh/id_rsa ec2-user@ec2-35-170-12-125.compute-1.amazonaws.com"
+                      sh "docker run -d -p 8080:8080 s3836322/samplewebapp"
+                    }
+                  }
+                }
+              }""".stripIndent())
+          }
+        }
+      }

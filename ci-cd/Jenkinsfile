@@ -1,0 +1,43 @@
+pipeline {
+                agent any
+                tools {
+                  maven 'maven3'
+                  jdk 'jdk11'
+                }
+                stages {
+                  stage('checkout') {
+                    steps {
+                      git branch: 'master', url: 'https://github.com/devops4solutions/CI-CD-using-Docker.git'
+                    }
+                  }
+                  stage('Execute Maven') {
+                    steps {
+                      sh 'mvn package'
+                    }
+                  }
+                  stage('Docker Build and Tag') {
+                    steps {
+                      sh 'docker build -t samplewebapp:latest .'
+                      sh 'docker tag samplewebapp 707576/samplewebapp:latest'
+                    }
+                  }
+                  stage('Publish image to Docker Hub') {
+                    steps {
+                      withCredentials([usernamePassword(usernameVariable: "USER", passwordVariable: "PASSWORD", credentialsId: "dockerhub_deployer")]) {
+                        sh  'docker login -u s3836322 --password dckr_pat_OVW-BESNVfTEbSv9KhJ23v1nz5E'
+                        sh  'docker push 707576/samplewebapp:latest'
+                      }
+                    }
+                  }
+                  stage('Run Docker container on Jenkins Agent') {
+                    steps {
+                      sh "docker run -d -p 8003:8080 707576/samplewebapp"
+                    }
+                  }
+                  stage('Run Docker container on remote hosts') {
+                    steps {
+                      sh "docker -H ssh://jenkins@172.31.28.25 run -d -p 8003:8080 707576/samplewebapp"
+                    }
+                  }
+                }
+              }
