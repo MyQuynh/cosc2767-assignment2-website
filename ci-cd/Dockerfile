@@ -20,8 +20,8 @@ RUN curl -fsSLO https://get.docker.com/builds/Linux/x86_64/docker-17.04.0-ce.tgz
   && rm -r docker docker-17.04.0-ce.tgz
 
 
-RUN sudo snap install docker
-RUN sudo snap start docker
-RUN sudo chmod 666 /var/run/docker.sock
+RUN snap install docker
+RUN snap start docker
+RUN chmod 666 /var/run/docker.sock
 
 EXPOSE 8080
