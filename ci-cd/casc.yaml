@@ -60,7 +60,7 @@ jobs:
                   jdk 'jdk11'
                 }
                 triggers {
-                  pollSCM ''
+                  pollSCM '* * * * *'
                 }
                 stages {
                   stage('checkout') {
