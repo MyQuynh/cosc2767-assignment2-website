@@ -44,8 +44,8 @@ credentials:
       - usernamePassword:
           scope: GLOBAL
           id: "dockerhub_deployer"
-          username: "s3836322"
-          password: "dckr_pat_OVW-BESNVfTEbSv9KhJ23v1nz5E"
+          username: ${DOCKERHUB_ID}
+          password: ${DOCKERHUB_PASSWORD}
           description: "Dockerhub deployer"
 jobs:
   - script: >
@@ -88,8 +88,7 @@ jobs:
                   }
                   stage('Run Docker container on Tomcat hosts') {
                     steps {
-                      sh "ssh -tt -i /home/ubuntu/.ssh/id_rsa ec2-user@ec2-35-170-12-125.compute-1.amazonaws.com"
-                      sh "docker run -d -p 8080:8080 s3836322/samplewebapp"
+                      sh 'ssh -tt -i /home/ubuntu/.ssh/id_rsa ec2-user@ec2-35-170-12-125.compute-1.amazonaws.com "docker run -d -p 8080:8080 s3836322/samplewebapp"'
                     }
                   }
                 }
