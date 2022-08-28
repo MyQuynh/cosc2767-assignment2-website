@@ -86,11 +86,6 @@ jobs:
                       }
                     }
                   }
-                  stage('Run Docker container on Jenkins Agent') {
-                    steps {
-                      sh "docker run -d -p 8003:8080 s3836322/samplewebapp"
-                    }
-                  }
                   stage('Run Docker container on Tomcat hosts') {
                     steps {
                       sh "ssh -i /home/ubuntu/.ssh/id_rsa ec2-user@ec2-35-170-12-125.compute-1.amazonaws.com"
