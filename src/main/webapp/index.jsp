@@ -38,7 +38,7 @@
       <br>
       <span class="badge badge-success">IT</span>
       <br>
-      <span class="badge badge-danger">Code</span>
+      <span class="badge badge-danger">Coding</span>
       <br>
       <span class="badge badge-warning">Python</span>
       <!-- You only need to change these information, ends here! -->
